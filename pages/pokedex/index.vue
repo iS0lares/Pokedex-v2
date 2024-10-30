@@ -70,7 +70,6 @@
             class="my-13 d-flex justify-center"
           >
             <v-card class="pokemon-card" @click="getPokemonOnCard(item)" hover>
-              {{ item.id }}
               <div class="pokemon-image-wrapper">
                 <v-img
                   :src="
@@ -99,7 +98,23 @@
           </v-col>
         </v-row>
       </v-col>
-      <v-col cols="5"> </v-col>
+      <v-col :cols="!isPokemonSelected ? '12' : '5'">
+        <v-card
+          v-if="pokemonSelected"
+          class="h-100 mt-11 ml-5 d-flex justify-center"
+        >
+          <div class="pokemon-image-wrapper">
+            <pre></pre>
+            <v-img
+              :src="
+                pokemonSelected.sprites.versions['generation-v']['black-white']
+                  .animated.front_default
+              "
+              class="pokemon-image"
+            ></v-img>
+          </div>
+        </v-card>
+      </v-col>
     </v-row>
   </div>
 </template>
@@ -109,6 +124,7 @@ import axios from "axios";
 const allPokemons: any = ref("");
 const eachPokemonDetails: any = ref([]);
 const isPokemonSelected = ref(false);
+const pokemonSelected: any = ref();
 const onClick = () => {
   console.log("Buscando");
 };
@@ -143,7 +159,8 @@ const getEachPokemon = async () => {
 };
 
 const getPokemonOnCard = (idPokemon: number): void => {
-  console.log(idPokemon);
+  pokemonSelected.value = idPokemon;
+  console.log(pokemonSelected.value);
   isPokemonSelected.value = !isPokemonSelected.value;
 };
 
@@ -181,8 +198,8 @@ getEachPokemon();
 }
 
 .pokemon-image {
-  width: 100rem;
-  height: 8rem;
+  width: 10rem;
+  height: 7rem;
 }
 
 .pokemon-number {
