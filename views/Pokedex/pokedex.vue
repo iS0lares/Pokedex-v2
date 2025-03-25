@@ -1,7 +1,6 @@
 <template>
   <div class="mt-16">
     <v-row no-gutters class="ml-0">
-
       <v-col :cols="!isPokemonSelected ? '12' : '7'" class="pa-0">
         <v-text-field
           label="Search pokemon here!"
@@ -63,7 +62,11 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12" class="d-flex justify-center" v-if="isPokemonsLoading" >
+          <v-col
+            cols="12"
+            class="d-flex justify-center"
+            v-if="isPokemonsLoading"
+          >
             <v-progress-circular indeterminate color="red" />
           </v-col>
           <v-col
@@ -102,21 +105,22 @@
         </v-row>
       </v-col>
       <v-col :cols="!isPokemonSelected ? '12' : '5'">
-        <v-card
-          v-if="pokemonSelected"
-          class="h-100 mt-11 ml-5 "
-        >
-        <v-col cols="12" class="d-flex justify-center flex-column">
-            <v-img
-              :src="
-                pokemonSelected.sprites.versions['generation-v']['black-white']
-                  .animated.front_default
-              "
-              class="pokemon-selected-image mx-auto"
-            ></v-img>
-            <span class="mx-auto">{{ pokemonSelected.name }}</span>
-            </v-col>
-        </v-card>
+        <v-col cols="12" class="d-flex h-auto justify-center flex-column">
+          <v-card v-if="pokemonSelected" class="pokemon-card-selected ml-5">
+            <div class="pokemon-selected-image-wrapper">
+              <v-img
+                :src="
+                  pokemonSelected.sprites.other['official-artwork']
+                    .front_default
+                "
+                class="pokemon-selected-image"
+              ></v-img>
+            </div>
+            <v-card-title class="pokemon-number mt-2"
+              >N°{{ pokemonSelected.id }}</v-card-title
+            >
+          </v-card>
+        </v-col>
       </v-col>
     </v-row>
   </div>
@@ -128,13 +132,12 @@ const allPokemons: any = ref("");
 const eachPokemonDetails: any = ref([]);
 const isPokemonSelected = ref(false);
 const pokemonSelected: any = ref();
-const isPokemonsLoading: Ref<boolean, boolean> = ref(true)
-
+const isPokemonsLoading: Ref<boolean, boolean> = ref(true);
 
 const getPokemons = async () => {
   try {
     const res = await axios.get(
-      `https://pokeapi.co/api/v2/pokemon?limit=300&offset=0`
+      `https://pokeapi.co/api/v2/pokemon?limit=1000&offset=0`
     );
     allPokemons.value = res.data.results;
     return allPokemons.value;
@@ -146,7 +149,7 @@ const getPokemons = async () => {
 const eachUrlPokemon = async (urlPokemon: string) => {
   try {
     const res = await axios.get(urlPokemon);
-    isPokemonsLoading.value = false
+    isPokemonsLoading.value = false;
     return res.data;
   } catch (error) {
     console.log(error);
@@ -161,10 +164,24 @@ const getEachPokemon = async () => {
   }
 };
 
-const getPokemonOnCard = (idPokemon: number): void => {
-  pokemonSelected.value = idPokemon;
-  console.log(pokemonSelected.value);
-  isPokemonSelected.value = !isPokemonSelected.value;
+const getPokemonOnCard = async (pokemonData: any) => {
+  if (isPokemonSelected.value) {
+    if (pokemonData?.id === pokemonSelected.value?.id) {
+      isPokemonSelected.value = false;
+      console.log("salve22");
+
+      return;
+    }
+    pokemonSelected.value = pokemonData;
+    isPokemonSelected.value = true;
+    console.log(pokemonSelected.value.id);
+    console.log(pokemonData.id);
+    console.log("salve11");
+  } else {
+    pokemonSelected.value = pokemonData;
+    isPokemonSelected.value = true;
+    console.log("salve");
+  }
 };
 
 getEachPokemon();
@@ -195,7 +212,14 @@ getEachPokemon();
 
 .pokemon-image-wrapper {
   position: absolute;
-  top: -17%;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.pokemon-selected-image-wrapper {
+  position: absolute;
+  top: -50%;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -204,6 +228,19 @@ getEachPokemon();
   width: 10rem;
   height: 7rem;
 }
+
+.pokemon-card-selected {
+  margin-top: 20%;
+  width: 99%;
+  height: auto;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  padding-top: 12%;
+  overflow: visible;
+}
+
 .pokemon-selected-image {
   width: 15rem;
   height: 10rem;
