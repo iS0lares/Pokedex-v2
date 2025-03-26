@@ -196,7 +196,7 @@ const pokemonSubtext: any = ref("");
 const getPokemons = async () => {
   try {
     const res = await axios.get(
-      `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`
+      `https://pokeapi.co/api/v2/pokemon?limit=1000&offset=0`
     );
     allPokemons.value = res.data.results;
     return allPokemons.value;
