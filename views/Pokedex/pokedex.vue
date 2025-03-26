@@ -116,9 +116,65 @@
                 class="pokemon-selected-image"
               ></v-img>
             </div>
-            <v-card-title class="pokemon-number mt-2"
+            <v-card-title class="pokemon-number mt-0 mb-0 pb-0"
               >N°{{ pokemonSelected.id }}</v-card-title
             >
+            <p class="pokemon-name-selected text-capitalize font-weight-bold">
+              {{ pokemonSelected.name }}
+            </p>
+            <v-row justify="center" class="mt-2">
+              <v-col cols="12" class="d-flex flex-row justify-center">
+                <v-sheet
+                  v-for="type in typeOfPokemonSelected"
+                  :key="type"
+                  :color="type"
+                  :width="100"
+                  class="pokemon-type-selected pa-2 mx-2"
+                  rounded
+                  >{{ type.toUpperCase() }}</v-sheet
+                >
+              </v-col>
+            </v-row>
+            <v-row class="flex-column">
+              <v-col cols="6" class="mx-auto pb-0">
+                <p class="text-h5 font-weight-black">POKÉDEX ENTRY</p>
+              </v-col>
+              <v-col cols="6" class="mx-auto">
+                <p class="pokemon-selected-subtext">
+                  {{ pokemonSubtext.replace(/[\n\f]/g, " ") }}
+                </p>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <p class="text-h5 font-weight-black">ABILITIES</p>
+              </v-col>
+            </v-row>
+            <v-row justify="center">
+              <v-col
+                v-for="moves in movesOfPokemonSelected"
+                :key="moves"
+                cols="5"
+                class="mb-5"
+              >
+                <v-chip
+                  class="w-100 chip-abilities font-weight-bold text-h6 pa-6 text-capitalize"
+                  >{{ moves }}</v-chip
+                >
+              </v-col>
+            </v-row>
+            <v-row justify="center" class="mb-5">
+              <v-col cols="5"
+                ><v-chip class="w-100 font-weight-bold text-h6 pa-6"
+                  >{{ pokemonSelected.height }} M</v-chip
+                ></v-col
+              >
+              <v-col cols="5"
+                ><v-chip class="w-100 font-weight-bold text-h6 pa-6"
+                  >{{ pokemonSelected.weight }} Kg</v-chip
+                ></v-col
+              >
+            </v-row>
           </v-card>
         </v-col>
       </v-col>
@@ -131,13 +187,16 @@ import axios from "axios";
 const allPokemons: any = ref("");
 const eachPokemonDetails: any = ref([]);
 const isPokemonSelected = ref(false);
-const pokemonSelected: any = ref();
+const pokemonSelected: any = ref("");
 const isPokemonsLoading: Ref<boolean, boolean> = ref(true);
+const typeOfPokemonSelected = ref("");
+const movesOfPokemonSelected: any = ref("");
+const pokemonSubtext: any = ref("");
 
 const getPokemons = async () => {
   try {
     const res = await axios.get(
-      `https://pokeapi.co/api/v2/pokemon?limit=1000&offset=0`
+      `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`
     );
     allPokemons.value = res.data.results;
     return allPokemons.value;
@@ -165,22 +224,37 @@ const getEachPokemon = async () => {
 };
 
 const getPokemonOnCard = async (pokemonData: any) => {
-  if (isPokemonSelected.value) {
-    if (pokemonData?.id === pokemonSelected.value?.id) {
-      isPokemonSelected.value = false;
-      console.log("salve22");
+  if (pokemonData) {
+    getTypeOfPokemonSelected(pokemonData);
+    pokemonSubtext.value = await getSubtextFromPokemonSelected(pokemonData.id);
+    getMovesOfPokemon(pokemonData);
+    const isSamePokemon = pokemonData.id === pokemonSelected.value?.id;
+    isPokemonSelected.value = !isSamePokemon;
+    console.log(pokemonData);
+    pokemonSelected.value = isSamePokemon ? null : pokemonData;
+  }
+};
 
-      return;
-    }
-    pokemonSelected.value = pokemonData;
-    isPokemonSelected.value = true;
-    console.log(pokemonSelected.value.id);
-    console.log(pokemonData.id);
-    console.log("salve11");
-  } else {
-    pokemonSelected.value = pokemonData;
-    isPokemonSelected.value = true;
-    console.log("salve");
+const getTypeOfPokemonSelected = (pokemonData: any) => {
+  typeOfPokemonSelected.value = pokemonData.types.map(
+    (value: any) => value.type.name
+  );
+};
+
+const getMovesOfPokemon = (pokemonData: any) => {
+  movesOfPokemonSelected.value = pokemonData.abilities.map(
+    (value: any) => value.ability.name
+  );
+};
+
+const getSubtextFromPokemonSelected = async (idPokemon: any) => {
+  try {
+    const response = await axios.get(
+      `https://pokeapi.co/api/v2/pokemon-species/${idPokemon}`
+    );
+    return response.data.flavor_text_entries[1].flavor_text;
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -219,7 +293,7 @@ getEachPokemon();
 
 .pokemon-selected-image-wrapper {
   position: absolute;
-  top: -50%;
+  top: -17%;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -231,19 +305,20 @@ getEachPokemon();
 
 .pokemon-card-selected {
   margin-top: 20%;
-  width: 99%;
+  top: -15%;
+  width: 37%;
   height: auto;
   border-radius: 20px;
   text-align: center;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-  padding-top: 12%;
+  position: fixed;
+  padding-top: 4%;
   overflow: visible;
 }
 
 .pokemon-selected-image {
-  width: 15rem;
-  height: 10rem;
+  width: 14rem;
+  height: 14rem;
 }
 
 .pokemon-number {
@@ -260,8 +335,31 @@ getEachPokemon();
   margin-bottom: 10px;
 }
 
+.pokemon-name-selected {
+  font-size: 35px;
+  color: #060c25;
+}
+
 .pokemon-type {
   font-size: 12px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.chip-abilities {
+  border: 1px solid grey;
+  background: #f7f8fa;
+}
+
+.pokemon-selected-subtext {
+  font-size: 20px;
+  font-weight: 300;
+  color: #060c25;
+}
+
+.pokemon-type-selected {
+  font-size: 17px;
+  font-weight: bold;
   color: white;
   text-transform: uppercase;
 }
